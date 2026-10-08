@@ -1,0 +1,95 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+
+:root {
+  --bg: #0f0f1a;
+  --panel: rgba(29, 27, 51, 0.76);
+  --border: rgba(255, 255, 255, 0.09);
+  --text: #f5f2ff;
+  --muted: #9894b2;
+  --purple: #9b7bff;
+  --pink: #e98cff;
+  --green: #55dbaf;
+  --red: #ff7eaa;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: radial-gradient(circle at 78% 0%, #241947 0, transparent 34%), var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+}
+.app-shell { max-width: 1180px; margin: auto; padding: 0 28px 30px; }
+.topbar { height: 82px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
+.brand { color: var(--text); text-decoration: none; display: flex; align-items: center; gap: 10px; font: 700 20px 'Space Grotesk', sans-serif; }
+.brand-mark, .plus-icon { display: grid; place-items: center; color: #fff; background: linear-gradient(135deg, #7d62e7, #d28dff); box-shadow: 0 8px 24px #8f70ef33; }
+.brand-mark { width: 29px; height: 29px; border-radius: 9px; font-size: 17px; }
+.header-status, .date-badge, .chart-period, .transaction-count { color: var(--muted); font-size: 13px; }
+.status-dot { width: 7px; height: 7px; background: var(--green); border-radius: 50%; display: inline-block; margin-right: 8px; box-shadow: 0 0 10px var(--green); }
+.hero { display: flex; justify-content: space-between; align-items: end; padding: 56px 0 32px; }
+.eyebrow { color: var(--purple); letter-spacing: 1.7px; font-size: 10px; font-weight: 700; margin: 0 0 9px; }
+h1, h2 { font-family: 'Space Grotesk', sans-serif; margin: 0; }
+h1 { font-size: clamp(31px, 5vw, 48px); letter-spacing: -1.8px; }
+h1 span { color: var(--pink); }
+.hero-copy { color: var(--muted); margin: 12px 0 0; }
+.date-badge { background: #201c39; padding: 10px 15px; border: 1px solid var(--border); border-radius: 9px; }
+.summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.summary-card, .panel { border: 1px solid var(--border); border-radius: 18px; backdrop-filter: blur(16px); }
+.summary-card { padding: 23px 25px; min-height: 155px; position: relative; overflow: hidden; }
+.summary-card::after { content: ''; width: 140px; height: 140px; border-radius: 50%; position: absolute; right: -48px; bottom: -72px; background: #ffffff12; }
+.balance-card { background: linear-gradient(135deg, #4e3292, #292052); }
+.income-card { background: linear-gradient(135deg, #203d50, #1e263f); }
+.expense-card { background: linear-gradient(135deg, #542e61, #291f45); }
+.card-label { color: #d5ccee; font-size: 13px; display: flex; align-items: center; gap: 9px; }
+.card-icon { color: #d8c5ff; font-size: 18px; }
+.summary-card strong { display: block; font: 600 32px 'Space Grotesk'; margin: 20px 0 7px; }
+.card-caption { color: #aba4c8; font-size: 12px; }
+.dashboard-grid { display: grid; grid-template-columns: 1.05fr .95fr; gap: 16px; margin-top: 16px; }
+.panel { background: var(--panel); padding: 26px; }
+.panel-heading { display: flex; justify-content: space-between; align-items: start; margin-bottom: 25px; }
+h2 { font-size: 21px; letter-spacing: -.5px; }
+.plus-icon { width: 31px; height: 31px; border-radius: 9px; font-size: 21px; }
+label { display: block; color: #c1bad6; font-size: 12px; font-weight: 600; margin: 0 0 8px; }
+input, select { width: 100%; color: var(--text); background: #121121; border: 1px solid #393450; border-radius: 9px; padding: 12px 13px; outline: none; font: inherit; transition: border .2s, box-shadow .2s; }
+input:focus, select:focus { border-color: var(--purple); box-shadow: 0 0 0 3px #9b7bff1c; }
+select { appearance: auto; }
+option { background: #1d1a31; }
+form > label:not(:first-child), .form-row, .amount-input, .primary-button { margin-top: 18px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
+.amount-input { position: relative; margin-top: 0; }
+.amount-input span { position: absolute; left: 13px; top: 12px; color: var(--muted); }
+.amount-input input { padding-left: 27px; }
+.primary-button { cursor: pointer; width: 100%; border: 0; border-radius: 9px; padding: 13px; color: #fff; font-weight: 700; background: linear-gradient(100deg, #8061e8, #a26de7); box-shadow: 0 9px 20px #8664dc33; transition: transform .2s, filter .2s; }
+.primary-button:hover { transform: translateY(-2px); filter: brightness(1.1); }
+.primary-button span { font-size: 18px; vertical-align: -1px; margin-right: 5px; }
+.form-message { min-height: 17px; color: var(--muted); font-size: 12px; text-align: center; margin: 10px 0 0; }
+.form-message.error { color: var(--red); }
+.chart-wrap { height: 236px; position: relative; display: grid; place-items: center; }
+.empty-chart { color: var(--muted); font-size: 12px; position: absolute; text-align: center; }
+.transactions-panel { margin-top: 16px; }
+.transactions-heading { margin-bottom: 9px; }
+.expense-list { display: grid; gap: 5px; }
+.transaction { display: flex; align-items: center; gap: 13px; padding: 13px 8px; border-top: 1px solid var(--border); }
+.transaction-symbol { display: grid; place-items: center; width: 39px; height: 39px; border-radius: 11px; background: #35265c; color: #c6abff; font-size: 17px; }
+.transaction-info { flex: 1; min-width: 0; }
+.transaction-title { font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.transaction-meta { color: var(--muted); font-size: 11px; margin-top: 4px; }
+.transaction-amount { font: 600 14px 'Space Grotesk'; }
+.transaction-amount.income { color: var(--green); }
+.transaction-amount.expense { color: var(--red); }
+.delete-button { cursor: pointer; border: 0; color: var(--muted); background: transparent; font-size: 18px; padding: 5px; }
+.delete-button:hover { color: var(--red); }
+.empty-state { text-align: center; color: var(--muted); padding: 28px 0 18px; font-size: 13px; }
+footer { color: #625d7d; text-align: center; font-size: 11px; padding-top: 25px; }
+footer span { color: var(--purple); margin-left: 3px; }
+@media (max-width: 700px) {
+  .app-shell { padding: 0 16px 25px; }
+  .header-status { display: none; }
+  .hero { padding: 38px 0 25px; display: block; }
+  .date-badge { display: inline-block; margin-top: 20px; }
+  .summary-grid, .dashboard-grid { grid-template-columns: 1fr; }
+  .summary-card { min-height: 135px; }
+  .summary-card strong { margin-top: 15px; }
+  .panel { padding: 21px 18px; }
+}
