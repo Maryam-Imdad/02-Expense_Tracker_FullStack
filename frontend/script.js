@@ -1,158 +1,165 @@
-const API = 'http://localhost:5000/api/expenses';
-const SUMMARY_API = 'http://localhost:5000/api/summary';
+const STORAGE_KEY = 'spendly-expenses';
+const CATEGORIES = ['Food', 'Transport', 'Shopping', 'Bills', 'Other'];
 const currency = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
-let chart;
+const dateFormatter = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
-const form = document.getElementById('expenseForm');
-const list = document.getElementById('expenseList');
-const formMessage = document.getElementById('formMessage');
-const emptyChart = document.getElementById('emptyChart');
+const form = document.querySelector('#expenseForm');
+const list = document.querySelector('#expenseList');
+const categorySummary = document.querySelector('#categorySummary');
+const formMessage = document.querySelector('#formMessage');
+let expenses = loadExpenses();
+
+function loadExpenses() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    return Array.isArray(saved) ? saved : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveExpenses() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(expenses));
+}
 
 function formatCurrency(value) {
   return currency.format(Number(value) || 0);
 }
 
 function formatDate(value) {
-  return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(value));
+  const date = new Date(`${value}T00:00:00`);
+  return Number.isNaN(date.getTime()) ? 'Unknown date' : dateFormatter.format(date);
 }
 
-function renderExpenses(expenses) {
-  list.replaceChildren();
-  document.getElementById('transactionCount').textContent =
-    `${expenses.length} transaction${expenses.length === 1 ? '' : 's'}`;
+function renderSummary() {
+  const total = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+  document.querySelector('#totalBalance').textContent = formatCurrency(total);
+  document.querySelector('#expenseCount').textContent = expenses.length;
+  document.querySelector('#averageExpense').textContent = formatCurrency(expenses.length ? total / expenses.length : 0);
+  document.querySelector('#transactionCount').textContent =
+    `${expenses.length} expense${expenses.length === 1 ? '' : 's'}`;
+}
 
+function renderCategories() {
+  const totals = CATEGORIES.map((category) => ({
+    category,
+    total: expenses.filter((expense) => expense.category === category)
+      .reduce((sum, expense) => sum + expense.amount, 0)
+  })).filter((item) => item.total > 0);
+  categorySummary.replaceChildren();
+
+  if (!totals.length) {
+    const empty = document.createElement('p');
+    empty.className = 'empty-state';
+    empty.textContent = 'Add an expense to see your spending breakdown.';
+    categorySummary.append(empty);
+    return;
+  }
+
+  const largest = Math.max(...totals.map((item) => item.total));
+  totals.forEach(({ category, total }) => {
+    const row = document.createElement('div');
+    row.className = 'category-row';
+    const name = document.createElement('span');
+    name.className = 'category-name';
+    name.textContent = category;
+    const track = document.createElement('span');
+    track.className = 'category-track';
+    const fill = document.createElement('span');
+    fill.className = 'category-fill';
+    fill.style.width = `${(total / largest) * 100}%`;
+    track.append(fill);
+    const amount = document.createElement('span');
+    amount.className = 'category-amount';
+    amount.textContent = formatCurrency(total);
+    row.append(name, track, amount);
+    categorySummary.append(row);
+  });
+}
+
+function renderExpenses() {
+  list.replaceChildren();
   if (!expenses.length) {
     const empty = document.createElement('p');
     empty.className = 'empty-state';
-    empty.textContent = 'No transactions yet. Add your first one above.';
+    empty.textContent = 'No expenses yet. Add your first one above.';
     list.append(empty);
     return;
   }
 
-  [...expenses].reverse().forEach((expense) => {
-    const item = document.createElement('div');
-    item.className = 'transaction';
-
-    const symbol = document.createElement('div');
-    symbol.className = 'transaction-symbol';
-    symbol.textContent = expense.type === 'income' ? '↗' : '◈';
-
-    const info = document.createElement('div');
-    info.className = 'transaction-info';
-    const title = document.createElement('div');
-    title.className = 'transaction-title';
-    title.textContent = expense.title;
-    const meta = document.createElement('div');
-    meta.className = 'transaction-meta';
-    meta.textContent = `${expense.category} · ${formatDate(expense.date)}`;
-    info.append(title, meta);
-
-    const amount = document.createElement('div');
-    amount.className = `transaction-amount ${expense.type}`;
-    amount.textContent = `${expense.type === 'income' ? '+' : '-'}${formatCurrency(expense.amount)}`;
-
-    const deleteButton = document.createElement('button');
-    deleteButton.className = 'delete-button';
-    deleteButton.type = 'button';
-    deleteButton.setAttribute('aria-label', `Delete ${expense.title}`);
-    deleteButton.textContent = '×';
-    deleteButton.addEventListener('click', () => deleteExpense(expense.id));
-
-    item.append(symbol, info, amount, deleteButton);
-    list.append(item);
-  });
-}
-
-function renderChart(expenses) {
-  const totals = expenses
-    .filter((expense) => expense.type === 'expense')
-    .reduce((categories, expense) => {
-      categories[expense.category] = (categories[expense.category] || 0) + Number(expense.amount);
-      return categories;
-    }, {});
-  const labels = Object.keys(totals);
-  emptyChart.hidden = labels.length > 0;
-
-  if (chart) chart.destroy();
-  if (!labels.length) return;
-
-  chart = new Chart(document.getElementById('expenseChart'), {
-    type: 'doughnut',
-    data: {
-      labels,
-      datasets: [{
-        data: Object.values(totals),
-        backgroundColor: ['#9b7bff', '#e98cff', '#55dbaf', '#ffbd72', '#6db8ff', '#ff7eaa', '#baa8ff'],
-        borderColor: '#1d1b33',
-        borderWidth: 4
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      cutout: '70%',
-      plugins: {
-        legend: { position: 'right', labels: { color: '#c9c3db', boxWidth: 10, padding: 13, font: { size: 11 } } },
-        tooltip: { callbacks: { label: (context) => ` ${formatCurrency(context.raw)}` } }
-      }
-    }
-  });
-}
-
-async function loadDashboard() {
-  try {
-    const [expensesResponse, summaryResponse] = await Promise.all([fetch(API), fetch(SUMMARY_API)]);
-    if (!expensesResponse.ok || !summaryResponse.ok) throw new Error('Unable to load dashboard data.');
-    const [expenses, summary] = await Promise.all([expensesResponse.json(), summaryResponse.json()]);
-    renderExpenses(expenses);
-    renderChart(expenses);
-    document.getElementById('balance').textContent = formatCurrency(summary.balance);
-    document.getElementById('income').textContent = formatCurrency(summary.totalIncome);
-    document.getElementById('expense').textContent = formatCurrency(summary.totalExpense);
-  } catch (error) {
-    list.innerHTML = '<p class="empty-state">Could not connect to the API. Please start the backend server.</p>';
-    formMessage.textContent = error.message;
-    formMessage.className = 'form-message error';
-  }
-}
-
-async function deleteExpense(id) {
-  try {
-    const response = await fetch(`${API}/${id}`, { method: 'DELETE' });
-    if (!response.ok) throw new Error('Could not delete transaction.');
-    await loadDashboard();
-  } catch (error) {
-    formMessage.textContent = error.message;
-    formMessage.className = 'form-message error';
-  }
-}
-
-form.addEventListener('submit', async (event) => {
-  event.preventDefault();
-  const formData = new FormData(form);
-  const payload = Object.fromEntries(formData.entries());
-  formMessage.textContent = '';
-
-  try {
-    const response = await fetch(API, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+  [...expenses].sort((a, b) => b.date.localeCompare(a.date) || b.createdAt - a.createdAt)
+    .forEach((expense) => {
+      const item = document.createElement('article');
+      item.className = 'transaction';
+      const symbol = document.createElement('div');
+      symbol.className = 'transaction-symbol';
+      symbol.textContent = '−';
+      const info = document.createElement('div');
+      info.className = 'transaction-info';
+      const title = document.createElement('div');
+      title.className = 'transaction-title';
+      title.textContent = expense.title;
+      const meta = document.createElement('div');
+      meta.className = 'transaction-meta';
+      meta.textContent = `${expense.category} · ${formatDate(expense.date)}`;
+      info.append(title, meta);
+      const amount = document.createElement('div');
+      amount.className = 'transaction-amount';
+      amount.textContent = `−${formatCurrency(expense.amount)}`;
+      const deleteButton = document.createElement('button');
+      deleteButton.className = 'delete-button';
+      deleteButton.type = 'button';
+      deleteButton.setAttribute('aria-label', `Delete ${expense.title}`);
+      deleteButton.textContent = '×';
+      deleteButton.addEventListener('click', () => deleteExpense(expense.id));
+      item.append(symbol, info, amount, deleteButton);
+      list.append(item);
     });
-    if (!response.ok) {
-      const result = await response.json();
-      throw new Error(result.message || 'Could not add transaction.');
-    }
-    form.reset();
-    formMessage.textContent = 'Transaction added successfully.';
-    await loadDashboard();
-  } catch (error) {
-    formMessage.textContent = error.message;
+}
+
+function render() {
+  renderSummary();
+  renderCategories();
+  renderExpenses();
+}
+
+function deleteExpense(id) {
+  expenses = expenses.filter((expense) => expense.id !== id);
+  saveExpenses();
+  render();
+  formMessage.textContent = 'Expense deleted.';
+  formMessage.className = 'form-message';
+}
+
+form.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const data = new FormData(form);
+  const amount = Number(data.get('amount'));
+
+  if (!Number.isFinite(amount) || amount <= 0) {
+    formMessage.textContent = 'Enter an amount greater than zero.';
     formMessage.className = 'form-message error';
+    return;
   }
+
+  expenses.push({
+    id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
+    title: String(data.get('title')).trim(),
+    amount,
+    category: String(data.get('category')),
+    date: String(data.get('date')),
+    createdAt: Date.now()
+  });
+  saveExpenses();
+  form.reset();
+  document.querySelector('#date').value = new Date().toISOString().slice(0, 10);
+  formMessage.textContent = 'Expense added successfully.';
+  formMessage.className = 'form-message';
+  render();
 });
 
-document.getElementById('currentDate').textContent = new Intl.DateTimeFormat('en-US', {
+document.querySelector('#currentDate').textContent = new Intl.DateTimeFormat('en-US', {
   weekday: 'long', month: 'short', day: 'numeric'
 }).format(new Date());
-loadDashboard();
+document.querySelector('#date').value = new Date().toISOString().slice(0, 10);
+render();

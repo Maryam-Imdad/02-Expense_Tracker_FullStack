@@ -3,48 +3,48 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Track your income and expenses in one beautiful dashboard.">
-  <title>ExpenseVault - Personal Expense Tracker</title>
+  <meta name="description" content="A simple, private expense tracker that runs in your browser.">
+  <title>Spendly | Expense Tracker</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="app-shell">
+  <div class="page-shell">
     <header class="topbar">
       <a class="brand" href="#">
-        <span class="brand-mark">✦</span>
-        <span>ExpenseVault</span>
+        <span class="brand-mark" aria-hidden="true">✦</span>
+        <span>Spendly</span>
       </a>
-      <div class="header-status"><span class="status-dot"></span> Personal finance</div>
+      <span class="privacy-note"><span class="status-dot" aria-hidden="true"></span>Saved on this device</span>
     </header>
 
     <main>
       <section class="hero">
         <div>
-          <p class="eyebrow">FINANCIAL OVERVIEW</p>
-          <h1>Good evening, <span>friend.</span></h1>
-          <p class="hero-copy">Stay on top of your money, one transaction at a time.</p>
+          <p class="eyebrow">PERSONAL FINANCE</p>
+          <h1>Make every <span>expense</span> count.</h1>
+          <p class="hero-copy">A clear view of your spending, without the clutter.</p>
         </div>
-        <div class="date-badge" id="currentDate"></div>
+        <time class="date-badge" id="currentDate"></time>
       </section>
 
-      <section class="summary-grid" aria-label="Financial summary">
+      <section class="summary-grid" aria-label="Expense summary">
         <article class="summary-card balance-card">
-          <div class="card-label"><span class="card-icon">↗</span> Current balance</div>
-          <strong id="balance">$0.00</strong>
-          <span class="card-caption">Available to spend</span>
+          <p class="card-label"><span class="card-icon">◎</span> Total balance</p>
+          <strong id="totalBalance">$0.00</strong>
+          <span class="card-caption">Total tracked spending</span>
         </article>
-        <article class="summary-card income-card">
-          <div class="card-label"><span class="card-icon">↑</span> Total income</div>
-          <strong id="income">$0.00</strong>
-          <span class="card-caption">Money coming in</span>
+        <article class="summary-card count-card">
+          <p class="card-label"><span class="card-icon">▤</span> Total expenses</p>
+          <strong id="expenseCount">0</strong>
+          <span class="card-caption">Transactions recorded</span>
         </article>
-        <article class="summary-card expense-card">
-          <div class="card-label"><span class="card-icon">↓</span> Total expenses</div>
-          <strong id="expense">$0.00</strong>
-          <span class="card-caption">Money going out</span>
+        <article class="summary-card average-card">
+          <p class="card-label"><span class="card-icon">↗</span> Average expense</p>
+          <strong id="averageExpense">$0.00</strong>
+          <span class="card-caption">Per transaction</span>
         </article>
       </section>
 
@@ -53,43 +53,45 @@
           <div class="panel-heading">
             <div>
               <p class="eyebrow">QUICK ACTION</p>
-              <h2>Add transaction</h2>
+              <h2>Add an expense</h2>
             </div>
-            <span class="plus-icon">+</span>
+            <span class="plus-icon" aria-hidden="true">+</span>
           </div>
           <form id="expenseForm">
-            <label for="title">Description</label>
-            <input id="title" name="title" type="text" placeholder="e.g. Monthly groceries" required maxlength="80">
+            <div class="field">
+              <label for="title">Expense title</label>
+              <input id="title" name="title" type="text" placeholder="e.g. Weekly groceries" maxlength="80" required>
+            </div>
             <div class="form-row">
-              <div>
+              <div class="field">
                 <label for="amount">Amount</label>
-                <div class="amount-input"><span>$</span><input id="amount" name="amount" type="number" min="0.01" step="0.01" placeholder="0.00" required></div>
+                <div class="amount-input">
+                  <span aria-hidden="true">$</span>
+                  <input id="amount" name="amount" type="number" min="0.01" step="0.01" placeholder="0.00" required>
+                </div>
               </div>
-              <div>
-                <label for="type">Type</label>
-                <select id="type" name="type">
-                  <option value="expense">Expense</option>
-                  <option value="income">Income</option>
-                </select>
+              <div class="field">
+                <label for="date">Date</label>
+                <input id="date" name="date" type="date" required>
               </div>
             </div>
-            <label for="category">Category</label>
-            <select id="category" name="category" required>
-              <option value="" disabled selected>Select a category</option>
-              <option>Food</option>
-              <option>School</option>
-              <option>Transport</option>
-              <option>Shopping</option>
-              <option>Bills</option>
-              <option>Salary</option>
-              <option>Other</option>
-            </select>
-            <button class="primary-button" type="submit"><span>+</span> Add transaction</button>
-            <p class="form-message" id="formMessage" role="status"></p>
+            <div class="field">
+              <label for="category">Category</label>
+              <select id="category" name="category" required>
+                <option value="" disabled selected>Choose a category</option>
+                <option>Food</option>
+                <option>Transport</option>
+                <option>Shopping</option>
+                <option>Bills</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <button class="primary-button" type="submit"><span aria-hidden="true">+</span> Add expense</button>
+            <p class="form-message" id="formMessage" role="status" aria-live="polite"></p>
           </form>
         </div>
 
-        <div class="panel chart-panel">
+        <div class="panel categories-panel">
           <div class="panel-heading">
             <div>
               <p class="eyebrow">SPENDING BREAKDOWN</p>
@@ -97,10 +99,7 @@
             </div>
             <span class="chart-period">All time</span>
           </div>
-          <div class="chart-wrap">
-            <canvas id="expenseChart"></canvas>
-            <p class="empty-chart" id="emptyChart">Add an expense to see your breakdown.</p>
-          </div>
+          <div id="categorySummary" class="category-summary"></div>
         </div>
       </section>
 
@@ -108,16 +107,15 @@
         <div class="panel-heading transactions-heading">
           <div>
             <p class="eyebrow">ACTIVITY</p>
-            <h2>Recent transactions</h2>
+            <h2>Expense list</h2>
           </div>
-          <span class="transaction-count" id="transactionCount">0 transactions</span>
+          <span class="transaction-count" id="transactionCount">0 expenses</span>
         </div>
         <div id="expenseList" class="expense-list"></div>
       </section>
     </main>
-    <footer>Built for better money habits <span>✦</span></footer>
+    <footer>Your expenses stay private in your browser <span aria-hidden="true">✦</span></footer>
   </div>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
